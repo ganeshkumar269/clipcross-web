@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "scripts": {
     "dev": "svelte-kit dev --port 5000",
-    "build": "svelte-kit build",
+    "build": "svelte-kit build --output public",
     "preview": "svelte-kit preview",
     "lint": "eslint --ignore-path .gitignore ."
   },
