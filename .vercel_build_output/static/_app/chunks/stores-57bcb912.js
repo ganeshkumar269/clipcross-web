@@ -1,0 +1,1 @@
+import{C as e}from"./vendor-c49cf35e.js";const s=e(""),o=e([]),t=new URL("https://localhost:3000/");new URL(t+"logout"),new URL(t+"activedevices"),new URL(t+"signin?request_type=web"),new URL(t+"refreshaccesstoken");const n=new URL("wss://localhost:3000");export{o as d,s as i,n as w};

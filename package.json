@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "scripts": {
     "dev": "svelte-kit dev --port 5000",
-    "build": "svelte-kit build --output public",
+    "build": "svelte-kit build",
     "preview": "svelte-kit preview",
     "lint": "eslint --ignore-path .gitignore ."
   },
@@ -17,12 +17,14 @@
     "svelte": "^3.34.0",
     "svelte-preprocess": "^4.0.0",
     "tslib": "^2.0.0",
-    "typescript": "^4.0.0"
+    "typescript": "^4.0.0",
+    "@sveltejs/adapter-vercel": "next"
   },
   "type": "module",
   "dependencies": {
     "@fontsource/fira-mono": "^4.2.2",
     "@lukeed/uuid": "^2.0.0",
+    "@sveltejs/vite-plugin-svelte": "^1.0.0-next.11",
     "@types/md5": "^2.3.0",
     "@types/ws": "^7.4.4",
     "cookie": "^0.4.1",
