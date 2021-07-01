@@ -1,0 +1,4 @@
+.svelte-kit
+node_modules
+server.pem
+server.cert
