@@ -8,7 +8,8 @@
 
 
 <main>
-	<button on:click="{signOut}">LogOut</button>
+	<button on:click="{signOut}" style="width: 100px;">LogOut</button>
+	<a href="/">Home</a>
 	<slot />
 </main>
 

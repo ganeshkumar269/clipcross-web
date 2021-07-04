@@ -1,5 +1,5 @@
 <script lang='ts'>
-    import { devices, id_token, refresh_token, wsRoute } from '$lib/stores'
+    import { devices, id_token, refresh_token, wsRoute,clips } from '$lib/stores'
     import md5 from 'md5'
     import ClipComp from '$lib/Clip/index.svelte'
     import type {Clip} from 'src/global'
@@ -15,7 +15,7 @@
     
     let idToken = Cookies.get('id_token') 
     let deviceId =Cookies.get('device_id')
-    let clips:Clip[] = [tempClip];
+    let clipsArray: any = {};
     let wsUrl = wsRoute + `?id_token=${idToken}&` + `device_id=${deviceId}`
     // console.log(wsUrl)
     let ws:WebSocket;
@@ -34,23 +34,17 @@
         console.log(dataJson)
         console.log(typeof(dataJson))
         if(dataJson.syncflow == true){ 
-            delete dataJson.syncflow
-            for(const [key,value] of Object.entries(dataJson)){
-                console.log({key,value})
-                clips.push(value as Clip)
-                devices.update(value=>[...value,key.toString()])
-            }
+            clipsArray = dataJson.clips
         }
-        if(dataJson?.status == 500){
-            console.log("Got a 500")
-            await updateRemoteClip()
+        else if(dataJson.updateClip == true){
+            dataJson?.vcbIds?.forEach(el=>{
+                clipsArray[dataJson.device_id][el] = dataJson?.clip 
+            })
         }
     }
 
-    const updateRemoteClip = async ()=>{
+    const updateRemoteClip = async (cbTextValue:string)=>{
         // document.execCommand('copy')
-        const cb = navigator.clipboard 
-        const cbTextValue = await cb.readText()
         console.log(cbTextValue)
         if(cbTextValue){
             let clip:Clip = {
@@ -59,8 +53,13 @@
                 timestamp:Date.now(),
                 hash:md5(cbTextValue)
             }
-            console.log("updateRemoteClip clip",clip)
-            ws.send(JSON.stringify({clip,vcbIds:["default-web"]}))
+            const dataToBeSent = {
+                clip,
+                updateClip : true,
+                vcbIds:["default-web"]
+            }
+            console.log("updateRemoteClip data ",dataToBeSent)
+            ws.send(JSON.stringify(dataToBeSent))
         }
     }
 
@@ -70,6 +69,37 @@
         setTimeout(()=>{
             ws.send(JSON.stringify({syncflow:true}))
         },3000)
+    }
+    let text:HTMLTextAreaElement
+    console.log("text Element ", text)
+    let currentContent:string
+    
+
+    const clipboardLoop = setInterval(()=>{
+        // text.focus()
+        if(typeof window === 'undefined') return
+        navigator.clipboard.readText()
+        .then(textRead=>{
+            console.log("Text Read ",textRead)
+            if(currentContent != textRead){
+                console.log("Current Content Changed")
+                currentContent = textRead
+                text.value = currentContent
+                clipsArray[deviceId]["default-web"]["value"] = currentContent
+                updateRemoteClip(currentContent)
+            }
+        })
+    },1000)
+
+    const writeToClipboard = (str:string)=>{
+        navigator.permissions.query({name: "clipboard-write"}).then(result => {
+            if (result.state == "granted" || result.state == "prompt") {
+                navigator.clipboard.writeText(str)
+            }
+        });
+    }
+    const refreshButton = ()=>{
+        clipsArray = clipsArray
     }
     onMount(()=> {
         ws = new WebSocket(wsUrl)
@@ -81,6 +111,7 @@
             console.log("WS ERROR :(")
             console.log(event)
         }
+        console.log("After Mount Text Element,", text)
     })
 </script>
 
@@ -89,15 +120,22 @@
 </svelte:head>
 
 <main>
+    <textarea type="text" bind:this={text}>Temp Text</textarea>
+    
+    <br>
     <button on:click="{getClipsFromServer}">Get Clips</button>
-    {#each clips as clip, i }
-        <ClipComp 
-            value={clip.value} 
-            format={clip.format} 
-            timestamp={clip.timestamp}
-            hash={clip.hash}
-            deviceId={devices[i]}
-        />
+    <button on:click="{getClipsFromServer}">Refresh</button>
+    {#each Object.entries(clipsArray) as [dId, val1], i }
+        {#each Object.entries(val1) as [vId, clip]}
+            <ClipComp 
+                value={clip.value} 
+                format={clip.format} 
+                timestamp={clip.timestamp}
+                hash={clip.hash}
+                deviceId={dId}
+                vcbId={vId}
+            />
+        {/each}
     {/each}
 </main>
 
