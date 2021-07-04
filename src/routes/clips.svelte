@@ -1,9 +1,9 @@
 <script lang='ts'>
-    import { devices, id_token, refresh_token, wsRoute,clips } from '$lib/stores'
+    import { devices, id_token, refresh_token, wsRoute,clips,wsStore } from '$lib/stores'
     import md5 from 'md5'
     import ClipComp from '$lib/Clip/index.svelte'
     import type {Clip} from 'src/global'
-    import { onMount } from 'svelte';
+    import { onDestroy, onMount } from 'svelte';
     import Cookies from 'js-cookie';
     
     let tempClip:Clip = {
@@ -19,7 +19,6 @@
     let wsUrl = wsRoute + `?id_token=${idToken}&` + `device_id=${deviceId}`
     // console.log(wsUrl)
     let ws:WebSocket;
-    
     const onWsOpen = (event) => {
         console.log("WebScoket Connection Opened")
         const payload = JSON.stringify({"syncflow":true})
@@ -42,7 +41,7 @@
             })
         }
     }
-
+    
     const updateRemoteClip = async (cbTextValue:string)=>{
         // document.execCommand('copy')
         console.log(cbTextValue)
@@ -62,9 +61,9 @@
             ws.send(JSON.stringify(dataToBeSent))
         }
     }
-
-
-
+    
+    
+    
     const getClipsFromServer = async ()=>{
         setTimeout(()=>{
             ws.send(JSON.stringify({syncflow:true}))
@@ -74,7 +73,7 @@
     console.log("text Element ", text)
     let currentContent:string
     
-
+    
     const clipboardLoop = setInterval(()=>{
         // text.focus()
         if(typeof window === 'undefined') return
@@ -102,17 +101,22 @@
         clipsArray = clipsArray
     }
     onMount(()=> {
-        ws = new WebSocket(wsUrl)
-        console.log("ws created")
-        // ws.send(JSON.stringify({"status":"hey"}))
-        ws.onopen = onWsOpen
-        ws.onmessage = onWsMessage
-        ws.onerror = (event)=>{
-            console.log("WS ERROR :(")
-            console.log(event)
-        }
+        
         console.log("After Mount Text Element,", text)
     })
+    const unsub = wsStore.subscribe(val=>{
+        ws=val
+        console.log("WebSocket Set in clips.svelte")
+        if(ws){
+            ws.onopen = onWsOpen
+            ws.onmessage = onWsMessage
+            ws.onerror = (event)=>{
+                console.log("WS ERROR :(")
+                console.log(event)
+            }
+        }
+    })
+    onDestroy(unsub)
 </script>
 
 <svelte:head>
