@@ -1,6 +1,4 @@
 import https from 'https'
-// import http from 'http'
-
 
 const parseCookies = (cookie:string)=>{
     if(!cookie) return {}
@@ -21,12 +19,23 @@ export const get = async ({headers,params,query})=>{
     console.log("SignIn API")
     console.log({headers,params,query})
     const reqType = query.get("request_type")
+    const port = query.get("port")
     // const  = query.get("request_type")
     const signInApiRoute = new URL("https://localhost:3000/signin")
     const cookies = parseCookies(headers?.cookie)
     console.log({cookies})
-    const rt = cookies["refresh_token"]
-    let it = cookies["id_token"]
+    let rt,it;
+    switch(reqType){
+        case "web":{
+            rt = cookies["refresh_token"]
+            it = cookies["id_token"]
+            break
+        }
+        case "des":{
+            rt = query.get("refresh_token")
+            it = query.get("id_token")
+        }
+    }
     console.log({rt,it})
     if(rt && it){
         const httpsAgent = new https.Agent({
@@ -49,18 +58,40 @@ export const get = async ({headers,params,query})=>{
         if(data.status == 200){
             if(data.newtoken)
             it = data.id_token
-            // const rt_cookie = "refresh_token="+rt+";httpOnly=true;domain=localhost"
-            // const it_cookie = "id_token="+ it +";domain=localhost"
-            const expiryDate = new Date(new Date().getFullYear() + 1, new Date().getMonth()).toUTCString()
-            const rt_cookie = `refresh_token=${rt}; Path=/;HttpOnly;Secure;SameSite=Strict;Expires=${expiryDate}`
-            const it_cookie = `id_token=${it};Path=/;Expires=${expiryDate};`
-            const signInCookie = `signInCookie=${new Date().toString()}; Path=/;`
-            return {
-                headers:{
-                    'set-cookie': [rt_cookie,it_cookie,signInCookie],
-                    Location:"http://localhost:5000/",
-                },
-                status:302
+            let redirect_url= new URL("http://localhost:5000")
+
+            if(reqType == "web"){
+                redirect_url = new URL("http://localhost:5000")
+            }
+            if(reqType == "des"){
+                redirect_url = new URL(`http://localhost:${port}`)
+            }
+            
+
+            if(reqType == "web"){
+                const expiryDate = new Date(new Date().getFullYear() + 1, new Date().getMonth()).toUTCString()
+                const rt_cookie = `refresh_token=${rt}; Path=/;HttpOnly;Secure;SameSite=Strict;Expires=${expiryDate}`
+                const it_cookie = `id_token=${it};Path=/;Expires=${expiryDate};`
+                const signInCookie = `signInCookie=${new Date().toString()}; Path=/;`
+                return {
+                    headers:{
+                        'set-cookie': [rt_cookie,it_cookie,signInCookie],
+                        Location: redirect_url.toString()
+                    },
+                    status:302
+                }
+            }
+            else{
+                redirect_url.searchParams.append("refresh_token",data.refresh_token)
+                redirect_url.searchParams.append("id_token",data.id_token)
+                redirect_url.searchParams.append("device_id",data.device_id)
+
+                return {
+                    status: 302,
+                    headers:{
+                        'Location' : redirect_url.toString()
+                    }
+                }
             }
         }
         
@@ -68,8 +99,7 @@ export const get = async ({headers,params,query})=>{
     return {
         status:302,
         headers:{
-
-            Location:"http://localhost:5000/api/oauth?request_type="+reqType
+            Location:`http://localhost:5000/api/oauth?request_type=${reqType}&port=${port}`
         }
     }
 }

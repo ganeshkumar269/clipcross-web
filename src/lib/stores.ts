@@ -16,14 +16,16 @@ export const wsRoute = new URL("wss://localhost:3000")
 
 export const clips = writable({})
 
-export const wsStore = readable(null,(set)=>{
-    if(typeof window === 'undefined') return
+const getWs = ()=>{
+    if(typeof window === 'undefined') return null
     console.log("wsStore start function")
     let idToken = Cookies.get('id_token') 
     let deviceId =Cookies.get('device_id')
     let wsUrl = wsRoute + `?id_token=${idToken}&` + `device_id=${deviceId}`
-    console.log(wsUrl)
-    set(new WebSocket(wsUrl.toString()))
+    return new WebSocket(wsUrl) 
+}
 
+export const wsStore = readable(getWs(),(set)=>{
+    // set(new WebSocket(wsUrl.toString()))
     return function stop(){console.log("WsStore stop function")}
 })

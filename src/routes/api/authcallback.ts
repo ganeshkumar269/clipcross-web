@@ -11,10 +11,10 @@ export const get = async ({headers,query}) =>{
     let redirect_url = new URL("http://localhost:5000")
     let auth_url = new URL("https://localhost:3000/auth")
     if(reqType == "web"){
-        redirect_url = new URL("http://localhost:5000")
+        redirect_url = new URL(`http://localhost:5000`)
     }
     if(reqType == "des"){
-        redirect_url = new URL("http://localhost:" + port)    
+        redirect_url = new URL(`http://localhost:${port}`)    
     }
     auth_url.searchParams.append("request_type",reqType)
     auth_url.searchParams.append("state",state)
@@ -34,18 +34,34 @@ export const get = async ({headers,query}) =>{
         let response_json = {refresh_token:data.refresh_token,id_token:data.id_token,device_id:data.device_id}
         console.log(response_json)
         console.log(redirect_url)
-        const expiryDate = new Date(new Date().getFullYear() + 1, new Date().getMonth()).toUTCString()
-        const rt_cookie = `refresh_token=${data.refresh_token};Path=/;HttpOnly;Secure;SameSite=Strict;Expires=${expiryDate}`
-        const it_cookie = `id_token=${data.id_token};Path=/;Secure;SameSite=Strict;Expires=${expiryDate}`
-        const did_cookie = `device_id=${data.device_id};Path=/;Secure;SameSite=Strict;Expires=${expiryDate}`
-        const authCallBackCookie = `authCallBackCookie=${new Date().toString()}`
-        console.log({rt_cookie,it_cookie,did_cookie})
-        return {
-            headers:{
-                'set-cookie':[rt_cookie,it_cookie,did_cookie,authCallBackCookie],
-                'Location':redirect_url.toString()
-            },
-            status:302
+        if(reqType == "web"){
+            const expiryDate = new Date(new Date().getFullYear() + 1, new Date().getMonth()).toUTCString()
+            const rt_cookie = `refresh_token=${data.refresh_token};Path=/;HttpOnly;Secure;SameSite=Strict;Expires=${expiryDate}`
+            const it_cookie = `id_token=${data.id_token};Path=/;Secure;SameSite=Strict;Expires=${expiryDate}`
+            const did_cookie = `device_id=${data.device_id};Path=/;Secure;SameSite=Strict;Expires=${expiryDate}`
+            const authCallBackCookie = `authCallBackCookie=${new Date().toString()}`
+            console.log({rt_cookie,it_cookie,did_cookie})
+            return {
+                headers:{
+                    'set-cookie':[rt_cookie,it_cookie,did_cookie,authCallBackCookie],
+                    'Location':redirect_url.toString()
+                },
+                status:302
+            }
+        }else {
+            redirect_url.searchParams.append("refresh_token",data.refresh_token)
+            redirect_url.searchParams.append("id_token",data.id_token)
+            redirect_url.searchParams.append("device_id",data.device_id)
+
+            console.log("[authcallback.ts] redirect_url ", redirect_url.toString())
+
+            return {
+                status:302,
+                headers:{
+                    "Location" : redirect_url.toString()
+                }
+            }
+
         }
     }
 
