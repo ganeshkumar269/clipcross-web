@@ -66,7 +66,18 @@
     
     const getClipsFromServer = async ()=>{
         setTimeout(()=>{
-            ws.send(JSON.stringify({syncflow:true}))
+            const data = {
+                sycnflow : true,
+                data : {
+                    "default-web" : {
+                        value : "RandomThing",
+                        timestamp : 0,
+                        hash : "tempHash",
+                        format: "text"
+                    }
+                }
+            }
+            ws.send(JSON.stringify(data))
         },3000)
     }
     let text:HTMLTextAreaElement
@@ -128,7 +139,7 @@
     
     <br>
     <button on:click="{getClipsFromServer}">Get Clips</button>
-    <button on:click="{getClipsFromServer}">Refresh</button>
+    <button on:click="{refreshButton}">Refresh</button>
     {#each Object.entries(clipsArray) as [dId, val1], i }
         {#each Object.entries(val1) as [vId, clip]}
             <ClipComp 
