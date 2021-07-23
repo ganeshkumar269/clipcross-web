@@ -1,4 +1,5 @@
 import https from 'https'
+import md5 from 'md5'
 
 const parseCookies = (cookie:string)=>{
     if(!cookie) return {}
@@ -82,9 +83,9 @@ export const get = async ({headers,params,query})=>{
                 }
             }
             else{
-                redirect_url.searchParams.append("refresh_token",data.refresh_token)
-                redirect_url.searchParams.append("id_token",data.id_token)
-                redirect_url.searchParams.append("device_id",data.device_id)
+                redirect_url.searchParams.append("refresh_token",rt)
+                redirect_url.searchParams.append("id_token",it)
+                redirect_url.searchParams.append("device_id",md5(rt))
 
                 return {
                     status: 302,

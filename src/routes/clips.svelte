@@ -1,32 +1,25 @@
 <script lang='ts'>
-    import { devices, id_token, refresh_token, wsRoute,clips,wsStore } from '$lib/stores'
+    import { devices, id_token, refresh_token, wsRoute,clips } from '$lib/stores'
     import md5 from 'md5'
     import ClipComp from '$lib/Clip/index.svelte'
     import type {Clip} from 'src/global'
     import { onDestroy, onMount } from 'svelte';
     import Cookies from 'js-cookie';
     
-    let tempClip:Clip = {
-        value:"temp value",
-        format:"temp format",
-        timestamp:4,
-        hash:"temp hash"
-    }
-    
     let idToken = Cookies.get('id_token') 
     let deviceId =Cookies.get('device_id')
     let clipsArray: any = {};
     let wsUrl = wsRoute + `?id_token=${idToken}&` + `device_id=${deviceId}`
-    // console.log(wsUrl)
+    let prevClipBoardText:string = "This is the first clip"
     let ws:WebSocket;
+
     const onWsOpen = (event) => {
         console.log("WebScoket Connection Opened")
         const payload = JSON.stringify({"syncflow":true})
         console.log(payload,ws)
-        // ws.send(payload)
-        getClipsFromServer()
-        
+        syncflowWithServer()
     }
+
     const onWsMessage = async (data) => {
         console.log("onMessage",data)
         let dataJson = JSON.parse(data.data.toString())
@@ -39,95 +32,80 @@
             dataJson?.vcbIds?.forEach(el=>{
                 clipsArray[dataJson.device_id][el] = dataJson?.clip 
             })
+            writeToClipboard(dataJson?.clip?.value)
         }
     }
-    
-    const updateRemoteClip = async (cbTextValue:string)=>{
-        // document.execCommand('copy')
-        console.log(cbTextValue)
-        if(cbTextValue){
+
+    const onWsError = (error)=>{
+        console.log("Ws Error error, ", error)
+    }
+
+    const updateRemoteClip = async (text:string)=>{
+        if(text){
             let clip:Clip = {
-                value:cbTextValue,
+                value:text,
                 format:"text",
                 timestamp:Date.now(),
-                hash:md5(cbTextValue)
+                hash:md5(text)
             }
             const dataToBeSent = {
                 clip,
                 updateClip : true,
                 vcbIds:["default-web"]
             }
-            console.log("updateRemoteClip data ",dataToBeSent)
+            console.log("updateRemoteClip data: ",dataToBeSent)
             ws.send(JSON.stringify(dataToBeSent))
         }
     }
     
-    
-    
-    const getClipsFromServer = async ()=>{
-        setTimeout(()=>{
-            const data = {
-                sycnflow : true,
-                data : {
-                    "default-web" : {
-                        value : "RandomThing",
-                        timestamp : 0,
-                        hash : "tempHash",
-                        format: "text"
-                    }
+    const syncflowWithServer = async ()=>{
+        const data = {
+            syncflow : true,
+            data : {
+                "default-web" : {
+                    value : prevClipBoardText,
+                    timestamp : Date.now(),
+                    hash : md5(prevClipBoardText),
+                    format: "text"
                 }
             }
-            ws.send(JSON.stringify(data))
-        },3000)
+        }
+        ws.send(JSON.stringify(data))
     }
-    let text:HTMLTextAreaElement
-    console.log("text Element ", text)
-    let currentContent:string
     
-    
-    const clipboardLoop = setInterval(()=>{
-        // text.focus()
+    const clipboardLoop = setInterval(async ()=>{
         if(typeof window === 'undefined') return
-        navigator.clipboard.readText()
-        .then(textRead=>{
-            console.log("Text Read ",textRead)
-            if(currentContent != textRead){
-                console.log("Current Content Changed")
-                currentContent = textRead
-                text.value = currentContent
-                clipsArray[deviceId]["default-web"]["value"] = currentContent
-                updateRemoteClip(currentContent)
-            }
-        })
+        if(!document.hasFocus()) return
+
+        const clipboardText = await navigator.clipboard.readText()
+        console.log("Text Read ",clipboardText)
+        if(prevClipBoardText != clipboardText){
+            console.log("Current Content Changed")
+            prevClipBoardText = clipboardText
+            clipsArray[deviceId]["default-web"]["value"] =prevClipBoardText 
+            updateRemoteClip(clipboardText)
+        }
     },1000)
 
     const writeToClipboard = (str:string)=>{
+        if(!str) return
         navigator.permissions.query({name: "clipboard-write"}).then(result => {
             if (result.state == "granted" || result.state == "prompt") {
                 navigator.clipboard.writeText(str)
             }
         });
     }
+
     const refreshButton = ()=>{
         clipsArray = clipsArray
     }
     onMount(()=> {
-        
-        console.log("After Mount Text Element,", text)
+        ws = new WebSocket(wsUrl) 
+        if(!ws) return
+        ws.onopen = onWsOpen
+        ws.onmessage = onWsMessage
+        ws.onerror = onWsError
     })
-    const unsub = wsStore.subscribe(val=>{
-        ws=val
-        console.log("WebSocket Set in clips.svelte")
-        if(ws){
-            ws.onopen = onWsOpen
-            ws.onmessage = onWsMessage
-            ws.onerror = (event)=>{
-                console.log("WS ERROR :(")
-                console.log(event)
-            }
-        }
-    })
-    onDestroy(unsub)
 </script>
 
 <svelte:head>
@@ -135,10 +113,8 @@
 </svelte:head>
 
 <main>
-    <textarea type="text" bind:this={text}>Temp Text</textarea>
-    
     <br>
-    <button on:click="{getClipsFromServer}">Get Clips</button>
+    <button on:click="{syncflowWithServer}">Get Clips</button>
     <button on:click="{refreshButton}">Refresh</button>
     {#each Object.entries(clipsArray) as [dId, val1], i }
         {#each Object.entries(val1) as [vId, clip]}

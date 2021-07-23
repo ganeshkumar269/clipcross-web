@@ -15,17 +15,3 @@ export const refreshAccessTokenRoute = new URL(apiRoute + "refreshaccesstoken")
 export const wsRoute = new URL("wss://localhost:3000")
 
 export const clips = writable({})
-
-const getWs = ()=>{
-    if(typeof window === 'undefined') return null
-    console.log("wsStore start function")
-    let idToken = Cookies.get('id_token') 
-    let deviceId =Cookies.get('device_id')
-    let wsUrl = wsRoute + `?id_token=${idToken}&` + `device_id=${deviceId}`
-    return new WebSocket(wsUrl) 
-}
-
-export const wsStore = readable(getWs(),(set)=>{
-    // set(new WebSocket(wsUrl.toString()))
-    return function stop(){console.log("WsStore stop function")}
-})
