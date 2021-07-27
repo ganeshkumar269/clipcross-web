@@ -23,14 +23,14 @@ export const pages = {
 }
 
 const api_testing_home = "https://localhost:3000"
-const api_live_home = "https://localhost:3000"
+const api_live_home = "https://:3000"
 
 export const api = {
     "endpoints" : {
         "home" : "",
         "login" : "/signin",
         "logout" : "/logout",
-        "wsHome" :"",
+        "wsHome" :"wss://localhost:3000",
         "token" : "/refreshaccesstoken",
         "auth" : "/auth"
     },

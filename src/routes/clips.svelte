@@ -15,7 +15,7 @@
     let idToken = Cookies.get('id_token') 
     let deviceId =Cookies.get('device_id')
     let clipsArray: any = {};
-    let wsUrl = api.get("wsHome") + `?id_token=${idToken}&` + `device_id=${deviceId}`
+    let wsUrl = api.endpoints.wsHome + `?id_token=${idToken}&` + `device_id=${deviceId}`
     let prevClipBoardText:string = "This is the first clip"
     let ws:WebSocket;
 
@@ -138,7 +138,7 @@
                 description= {formatString(clip.value)} 
                 success
                 outlined
-                buttonRoute={()=>console.log("Button Click in Card")}
+                buttonRoute={()=>writeToClipboard(clip.value)}
                 buttonTitle="Copy"
                 small
             />
