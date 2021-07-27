@@ -1,5 +1,6 @@
 import https from 'https'
 import md5 from 'md5'
+import {api, WEBSITE_URL} from "$lib/constants"
 
 const parseCookies = (cookie:string)=>{
     if(!cookie) return {}
@@ -22,7 +23,7 @@ export const get = async ({headers,params,query})=>{
     const reqType = query.get("request_type")
     const port = query.get("port")
     // const  = query.get("request_type")
-    const signInApiRoute = new URL("https://localhost:3000/signin")
+    const signInApiRoute = new URL(api.get("login"))
     const cookies = parseCookies(headers?.cookie)
     console.log({cookies})
     let rt,it;
@@ -59,10 +60,10 @@ export const get = async ({headers,params,query})=>{
         if(data.status == 200){
             if(data.newtoken)
             it = data.id_token
-            let redirect_url= new URL("http://localhost:5000")
+            let redirect_url= new URL(WEBSITE_URL)
 
             if(reqType == "web"){
-                redirect_url = new URL("http://localhost:5000")
+                redirect_url = new URL(WEBSITE_URL)
             }
             if(reqType == "des"){
                 redirect_url = new URL(`http://localhost:${port}`)
@@ -100,7 +101,7 @@ export const get = async ({headers,params,query})=>{
     return {
         status:302,
         headers:{
-            Location:`http://localhost:5000/api/oauth?request_type=${reqType}&port=${port}`
+            Location: WEBSITE_URL + `/api/oauth?request_type=${reqType}&port=${port}`
         }
     }
 }

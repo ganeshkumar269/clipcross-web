@@ -1,15 +1,21 @@
+<svelte:head>
+	<title>Web App</title>
+</svelte:head>
+
 <script lang='ts'>
-    import { devices, id_token, refresh_token, wsRoute,clips } from '$lib/stores'
+    import {api} from '$lib/constants'
     import md5 from 'md5'
     import ClipComp from '$lib/Clip/index.svelte'
     import type {Clip} from 'src/global'
     import { onDestroy, onMount } from 'svelte';
     import Cookies from 'js-cookie';
-    
+	import { Button, ButtonGroup,List, Card } from '@colorfuldots/svelteit'
+
+
     let idToken = Cookies.get('id_token') 
     let deviceId =Cookies.get('device_id')
     let clipsArray: any = {};
-    let wsUrl = wsRoute + `?id_token=${idToken}&` + `device_id=${deviceId}`
+    let wsUrl = api.get("wsHome") + `?id_token=${idToken}&` + `device_id=${deviceId}`
     let prevClipBoardText:string = "This is the first clip"
     let ws:WebSocket;
 
@@ -106,30 +112,52 @@
         ws.onmessage = onWsMessage
         ws.onerror = onWsError
     })
-</script>
 
-<svelte:head>
-	<title>Clips</title>
-</svelte:head>
+    const formatString = (str:string)=>{
+        if(str.length > 50)
+            return str.substr(0,50)
+        return str
+    }
+</script>
 
 <main>
     <br>
-    <button on:click="{syncflowWithServer}">Get Clips</button>
-    <button on:click="{refreshButton}">Refresh</button>
+    <div id="buttons">
+        <ButtonGroup>
+            <Button danger outined rounded block on:click="{syncflowWithServer}">Get Clips</Button>
+            <Button danger outined rounded block on:click="{refreshButton}">Refresh</Button>
+        </ButtonGroup>
+    </div>
+    <br>
+    <div id="clips-list">
     {#each Object.entries(clipsArray) as [dId, val1], i }
+        <h3>Device : {dId}</h3>
         {#each Object.entries(val1) as [vId, clip]}
-            <ClipComp 
-                value={clip.value} 
-                format={clip.format} 
-                timestamp={clip.timestamp}
-                hash={clip.hash}
-                deviceId={dId}
-                vcbId={vId}
+            <Card 
+                title= {vId} 
+                description= {formatString(clip.value)} 
+                success
+                outlined
+                buttonRoute={()=>console.log("Button Click in Card")}
+                buttonTitle="Copy"
+                small
             />
         {/each}
     {/each}
+    </div>
 </main>
 
 <style>
-
+    #clips-list{
+		display:grid;
+		margin-left: auto;
+		margin-right: auto;
+		width: 80%;
+    }
+	#buttons{
+		display:grid;
+		margin-left: auto;
+		margin-right: auto;
+		width: 20%;
+	}
 </style>

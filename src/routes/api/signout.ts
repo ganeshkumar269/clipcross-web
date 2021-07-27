@@ -1,5 +1,5 @@
 import https from 'https'
-
+import { api,WEBSITE_URL } from '$lib/constants'
 
 const parseCookies = (cookie:string)=>{
     if(!cookie) return {}
@@ -19,9 +19,7 @@ const parseCookies = (cookie:string)=>{
 export const get = async ({headers,params,query})=>{
     console.log("SignOut API")
     console.log({headers,params,query})
-    const reqType = query.get("request_type")
-    // const  = query.get("request_type")
-    const signOutApiRoute = new URL("https://localhost:3000/logout")
+    const signOutApiRoute = new URL(api.get("logout"))
     const cookies = parseCookies(headers?.cookie)
     console.log({cookies})
     const rt = cookies["refresh_token"]
@@ -50,7 +48,7 @@ export const get = async ({headers,params,query})=>{
             return {
                 headers:{
                     'set-cookie': [rt_cookie,it_cookie],
-                    Location:"http://localhost:5000/",
+                    Location: WEBSITE_URL,
                 },
                 status:302
             }
@@ -59,7 +57,7 @@ export const get = async ({headers,params,query})=>{
     }
     return {
         headers:{
-            Location:"http://localhost:5000"
+            Location:WEBSITE_URL
         },
         status:302
     }

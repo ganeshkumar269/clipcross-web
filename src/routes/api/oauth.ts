@@ -1,5 +1,5 @@
 import https from 'https'
-import fs from 'fs'
+import {api} from "$lib/constants"
 export const get = async ({params,query,headers})=>{
     console.log("OAUTH API")
     console.log({headers,params,query})
@@ -7,7 +7,7 @@ export const get = async ({params,query,headers})=>{
     const port = query.get("port")
     if(request_type == undefined)
         return {status:400}
-    const authURL = new URL("https://localhost:3000/auth")
+    const authURL = new URL(api.get("auth"))
     authURL.searchParams.append("request_type",request_type)
     authURL.searchParams.append("port",port)
 

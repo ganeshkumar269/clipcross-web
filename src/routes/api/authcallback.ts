@@ -1,5 +1,5 @@
 import https from 'https'
-import md5 from 'md5'
+import { api, WEBSITE_URL } from '$lib/constants'
 
 export const get = async ({headers,query}) =>{
     // const queryJson = await JSON.parse(query)
@@ -8,10 +8,10 @@ export const get = async ({headers,query}) =>{
     const state = query.get('state')
     const [reqType,port] = state.split('-')
     console.log({reqType,port})
-    let redirect_url = new URL("http://localhost:5000")
-    let auth_url = new URL("https://localhost:3000/auth")
+    let redirect_url = new URL(WEBSITE_URL)
+    let auth_url = new URL(api.get("auth"))
     if(reqType == "web"){
-        redirect_url = new URL(`http://localhost:5000`)
+        redirect_url = new URL(WEBSITE_URL)
     }
     if(reqType == "des"){
         redirect_url = new URL(`http://localhost:${port}`)    
