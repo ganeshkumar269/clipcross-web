@@ -15,7 +15,7 @@
     let idToken = Cookies.get('id_token') 
     let deviceId =Cookies.get('device_id')
     let clipsArray: any = {};
-    let wsUrl = api.endpoints.wsHome + `?id_token=${idToken}&` + `device_id=${deviceId}`
+    let wsUrl = api.get("wsHome") + `?id_token=${idToken}&` + `device_id=${deviceId}`
     let prevClipBoardText:string = "This is the first clip"
     let ws:WebSocket;
 
@@ -125,7 +125,6 @@
     <div id="buttons">
         <ButtonGroup>
             <Button danger outined rounded block on:click="{syncflowWithServer}">Get Clips</Button>
-            <Button danger outined rounded block on:click="{refreshButton}">Refresh</Button>
         </ButtonGroup>
     </div>
     <br>

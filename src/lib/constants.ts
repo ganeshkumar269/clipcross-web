@@ -1,7 +1,8 @@
 // const mode = process.env?.isLive ? process.env?.isLive : "testing"
-const mode = "testing"
+let mode = "live"
 
-export const WEBSITE_URL = mode == "testing" ? "http://localhost:5000" : "" 
+export const WEBSITE_URL = mode == "testing" ? "http://localhost:5000" : "https://clipcross-web.vercel.app" 
+// export const WEBSITE_URL = "http"
 
 export const pages = {
     "home" : {
@@ -23,22 +24,26 @@ export const pages = {
 }
 
 const api_testing_home = "https://localhost:3000"
-const api_live_home = "https://:3000"
+const api_live_home = "https://clippycross-server.ddns.net"
 
 export const api = {
     "endpoints" : {
         "home" : "",
         "login" : "/signin",
         "logout" : "/logout",
-        "wsHome" :"wss://localhost:3000",
+        "wsHome" :"",
         "token" : "/refreshaccesstoken",
         "auth" : "/auth"
     },
     get(route:string){
-       if(mode == "testing"){
-           return api_testing_home + this.endpoints[route]
-       }else{
-           return api_live_home + this.endpoints[route]
-       } 
+        if(route == "wsHome"){
+            if(mode =="testing") return "wss://localhost:3000/"
+            else return "wss://clippycross-server.ddns.net/"    
+        }
+        if(mode == "testing"){
+            return api_testing_home + this.endpoints[route]
+        }else{
+            return api_live_home + this.endpoints[route]
+        } 
     }
 }
