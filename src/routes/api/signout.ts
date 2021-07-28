@@ -1,5 +1,6 @@
 import https from 'https'
 import { api,WEBSITE_URL } from '$lib/constants'
+import jwt_decode from 'jwt-decode'
 
 const parseCookies = (cookie:string)=>{
     if(!cookie) return {}
@@ -23,8 +24,13 @@ export const get = async ({headers,params,query})=>{
     const cookies = parseCookies(headers?.cookie)
     console.log({cookies})
     const rt = cookies["refresh_token"]
-    console.log({rt})
-    if(rt ){
+    const it = cookies["id_token"]
+    console.log({rt,it})
+    if(rt && it){
+
+        const jwt_payload:any = jwt_decode(it)
+        console.log({jwt_payload})
+
         const httpsAgent = new https.Agent({
             rejectUnauthorized: false,
         });
@@ -33,7 +39,7 @@ export const get = async ({headers,params,query})=>{
             headers:{
                 'Content-Type':'application/json',
             },
-            body: await JSON.stringify({refresh_token:rt}),
+            body: await JSON.stringify({refresh_token:rt, email:jwt_payload?.email}),
             agent:httpsAgent,
         }
         console.log("started fetch")
@@ -43,8 +49,8 @@ export const get = async ({headers,params,query})=>{
         // const data = {status:200,newtoken:false,id_token:''}
         console.log({data})
         if(data.status == 200){
-            const rt_cookie = `refresh_token=;Path=;Expires=0;`
-            const it_cookie = `id_token=;Path=;maxAge=0;`
+            const rt_cookie = `refresh_token=;Path=/;maxAge=0;`
+            const it_cookie = `id_token=;Path=/;maxAge=0;`
             return {
                 headers:{
                     'set-cookie': [rt_cookie,it_cookie],
