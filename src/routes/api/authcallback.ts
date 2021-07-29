@@ -35,7 +35,7 @@ export const get = async ({headers,query}) =>{
         console.log(response_json)
         console.log(redirect_url)
         if(reqType == "web"){
-            const expiryDate = new Date(new Date().getFullYear() + 1, new Date().getMonth()).toUTCString()
+            const expiryDate = new Date(new Date().getFullYear() + 1, new Date().getMonth()).toUTCString() // expirey shud be looked into
             const rt_cookie = `refresh_token=${data.refresh_token};Path=/;HttpOnly;Secure;SameSite=Strict;Expires=${expiryDate}`
             const it_cookie = `id_token=${data.id_token};Path=/;Secure;SameSite=Strict;Expires=${expiryDate}`
             const did_cookie = `device_id=${data.device_id};Path=/;Secure;SameSite=Strict;Expires=${expiryDate}`

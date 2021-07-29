@@ -1,13 +1,16 @@
 <script context="module" lang="ts">
 	import { Button } from '@colorfuldots/svelteit'
 	import { goto } from '$app/navigation';
-	import {api, pages} from '$lib/constants'
+	import {api, pages, WINDOWS_APP_DOWNLOAD_LINK} from '$lib/constants'
 	import { onMount } from 'svelte';
 
 	const handleWebVersionButtonOnClick = (e)=>{
 		console.log(e)
 		console.log("Clicked Web Version")
 		goto(pages.webapp.link)
+	}
+	const redirectToWindowsAppDownloadPage = (e)=>{
+		window.open(WINDOWS_APP_DOWNLOAD_LINK)
 	}
 </script>
 
@@ -22,7 +25,7 @@
 		<h3><i>For Everthing Clipboard.</i></h3>
 	</div>
 	<div id="buttons">
-		<Button success outined rounded block><strong>Windows App</strong></Button>
+		<Button success outined rounded block on:click={redirectToWindowsAppDownloadPage}><strong>Windows App</strong></Button>
 		<br>
 		<Button success outined rounded block on:click={handleWebVersionButtonOnClick}><strong>Web Version</strong></Button>
 	</div>

@@ -3,6 +3,7 @@ let mode = "live"
 
 export const WEBSITE_URL = mode == "testing" ? "http://localhost:5000" : "https://clipcross-web.vercel.app" 
 // export const WEBSITE_URL = "http"
+export const WINDOWS_APP_DOWNLOAD_LINK = "https://1drv.ms/u/s!ApWi4MTjMcsap0uhiQe2vR3xt7Ms?e=OCtTgH";
 
 export const pages = {
     "home" : {
