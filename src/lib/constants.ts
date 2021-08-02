@@ -1,7 +1,6 @@
-// const mode = process.env?.isLive ? process.env?.isLive : "testing"
-let mode = "testing"
-
-export const WEBSITE_URL = mode == "testing" ? "http://localhost:5000" : "https://clipcross-web.vercel.app" 
+const MODE = import.meta.env.VITE_ENV_MODE.toString()
+console.log({MODE})
+export const WEBSITE_URL = MODE == "TESTING" ? "http://localhost:5000" : "https://clipcross-web.vercel.app" 
 // export const WEBSITE_URL = "http"
 export const WINDOWS_APP_DOWNLOAD_LINK = "https://1drv.ms/u/s!ApWi4MTjMcsap1ebKKi4YrRcFXSR?e=TBTcSg";
 
@@ -38,10 +37,10 @@ export const api = {
     },
     get(route:string){
         if(route == "wsHome"){
-            if(mode =="testing") return "wss://localhost:3000/"
+            if(MODE =="TESTING") return "wss://localhost:3000/"
             else return "wss://clippycross-server.ddns.net/"    
         }
-        if(mode == "testing"){
+        if(MODE == "TESTING"){
             return api_testing_home + this.endpoints[route]
         }else{
             return api_live_home + this.endpoints[route]
