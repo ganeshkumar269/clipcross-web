@@ -4,3 +4,4 @@ server.pem
 server.cert
 .vercel_build_output
 trash
+.env
