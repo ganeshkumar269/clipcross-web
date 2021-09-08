@@ -1,8 +1,9 @@
+//https://stackoverflow.com/questions/67964255/how-to-use-dotenv-in-sveltekit-projecct
 const MODE = import.meta.env.VITE_ENV_MODE.toString()
 console.log({MODE})
 export const WEBSITE_URL = MODE == "TESTING" ? "http://localhost:5000" : "https://clipcross-web.vercel.app" 
 // export const WEBSITE_URL = "http"
-export const WINDOWS_APP_DOWNLOAD_LINK = "https://1drv.ms/u/s!ApWi4MTjMcsap1ebKKi4YrRcFXSR?e=TBTcSg";
+export const WINDOWS_APP_DOWNLOAD_LINK = "https://1drv.ms/u/s!ApWi4MTjMcsap2vOOt3JoqWdauFG?e=mb5cz6";
 
 export const pages = {
     "home" : {
